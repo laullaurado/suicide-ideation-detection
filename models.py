@@ -5,9 +5,11 @@ from sklearn.metrics import (
 )
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.svm import SVC
+import xgboost as xgb
 
 
 from enum import Enum
@@ -17,6 +19,7 @@ class Model(Enum):
     RF = "RandomForest" 
     SVM = "SVM"
     LR = "LogisticRegression"
+    XGB = "XGBoost"
 
 def train_and_evaluate_model(X_tfidf, y, model: Model):
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=80)
@@ -38,13 +41,28 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
             print("Training Decision Tree")
             clf = DecisionTreeClassifier(max_depth=8, random_state=80)
         elif model == Model.RF:
-            ...
+            print("Training Random Forest")
+            clf = RandomForestClassifier(
+                n_estimators=100,
+                max_depth=18,
+                min_samples_split=2,
+                min_samples_leaf=1,
+                random_state=100
+            )
         elif model == Model.SVM:
             print("Training SVM")
             clf = SVC()
         elif model == Model.LR:
             print("Training Logistic Regression")
             clf = LogisticRegression(max_iter=1000, random_state=80)
+        elif model == Model.XGB:
+            print("Training XGBoost")
+            clf = xgb.XGBClassifier(
+                n_estimators=100,
+                max_depth=6,
+                learning_rate=0.1,
+                random_state=80
+            )
         clf.fit(X_train, y_train)
 
         # 4) Predecir y calcular probabilidades
