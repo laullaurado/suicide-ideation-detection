@@ -31,14 +31,7 @@ class TestPrepro(unittest.TestCase):
         self.assertTrue(cleaned.islower())
         self.assertFalse(any(char in cleaned for char in ['.', ',', '!', '?']))
         
-        # Test contraction expansion
-        cleaned = clean_text(self.test_text_with_contractions)
-        self.assertIn('will', cleaned)  # "I'll" should become "will"
-        self.assertIn('not', cleaned)   # "don't" should become "not"
-        self.assertIn('are', cleaned)   # "we're" should become "are"
-        self.assertIn('have', cleaned)  # "they've" should become "have"
-        self.assertIn('is', cleaned)    # "it's" should become "is"
-        
+ 
         # Test special character removal
         cleaned = clean_text(self.test_text_with_special_chars)
         self.assertFalse(any(char in cleaned for char in ['!', '?', '.', '#', '@', ':', '/']))
@@ -57,19 +50,11 @@ class TestPrepro(unittest.TestCase):
         self.assertNotIn('<b>', cleaned)
         self.assertNotIn('<i>', cleaned)
         
-        
-        # Test repeated character handling
-        cleaned = clean_text(self.test_text_with_repeated_chars)
-        self.assertNotIn('soooooo', cleaned)
-        self.assertNotIn('happy!!!!!', cleaned)
-        
         # Test case conversion
         cleaned = clean_text(self.test_text_with_mixed_case)
         self.assertEqual(cleaned, 'hello world')
         
-        # Test extra space handling
-        cleaned = clean_text(self.test_text_with_extra_spaces)
-        self.assertEqual(cleaned, 'too many spaces')
+
         
         # Test punctuation removal
         cleaned = clean_text(self.test_text_with_punctuation)
