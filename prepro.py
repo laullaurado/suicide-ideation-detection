@@ -1,3 +1,13 @@
+"""
+Authors:
+    - Carlos Alberto Sánchez Calderón
+    - Karla Stefania Cruz Muñiz
+Date:
+    2025-05-14
+Description:
+    This module contains a function to preprocess text data
+"""
+
 import re
 import pandas as pd  # type: ignore
 import ftfy  # type: ignore
@@ -45,35 +55,75 @@ def prepro(df: pd.DataFrame) -> pd.DataFrame:
     stop_words = set(stopwords.words('english'))
 
     def clean_text(text: str) -> str:
+        """
+        Cleans and preprocesses a given text string.
+        This function performs the following operations on the input text:
+        1. Fixes mojibake and broken encodings using the `ftfy` library.
+        2. Expands contractions (e.g., "don't" -> "do not") using the `contractions` library.
+        3. Removes special characters and symbols, retaining only alphabetic characters and spaces.
+        4. Converts the text to lowercase.
+        5. Replaces multiple spaces with a single space.
+        6. Trims leading and trailing spaces.
+        7. Removes English stopwords from the text.
+        Args:
+            text (str): The input text string to be cleaned.
+        Returns:
+            str: The cleaned and preprocessed text string.
+        """
 
-        # Corrige mojibake y codificaciones rotas (p.ej. youâ€™ll → you'll)
+        # Fix mojibake and broken encodings
         text = ftfy.fix_text(text)
-        # Expande contracciones (you'll → you will)
+        # Expand contractions
         text = contractions.fix(text)
-        text = text.replace('..', ' ')
-        # Elimina caracteres especiales y símbolos, manteniendo solo letras y espacios
+        # Remove special characters and symbols
         text = re.sub(r'[^a-zA-Z\s]', '', text)
-        # Convierte a minúsculas
+        # Convert text to lowercase
         text = text.lower()
-        # Elimina espacios múltiples
+        # Remove multiple spaces
         text = re.sub(r'\s+', ' ', text)
-        # Elimina espacios al inicio y final
+        # Trim leading/trailing spaces
         text = text.strip()
-        # Elimina stopwords
+        # Remove English stopwords
         text = ' '.join([word for word in text.split()
                         if word not in stop_words])
 
         return text
 
     def lemmatize_text(text: str) -> str:
+        """
+        Lemmatizes the input text by reducing each word to its base or dictionary form.
+        Args:
+            text (str): The input text to be lemmatized.
+        Returns:
+            str: A string containing the lemmatized version of the input text, 
+                 with words separated by spaces.
+        """
+
         doc = nlp(text)
         return ' '.join([token.lemma_ for token in doc])
 
     def tokenize_text(text: str) -> list[str]:
+        """
+        Splits the given text string into individual words
+        using whitespace as the delimiter.
+        Args:
+            text (str): The input string to be tokenized.
+        Returns:
+            list[str]: A list of words obtained by splitting the input text.
+        """
+
         return text.split()
 
-    def transform_label(label: str) -> bool:
-        return label == 'yes'
+    def transform_label(label: str) -> int:
+        """
+        Converts a textual label into a numerical representation.
+        Args:
+            label (str): The input label, expected to be either 'yes' or 'no'.
+        Returns:
+            int: Returns 1 if the label is 'yes', otherwise returns 0.
+        """
+
+        return 1 if label == 'yes' else 0
 
     df['text_clean'] = df['full_text'].astype(str).apply(clean_text)
     df['text_clean'] = df['text_clean'].astype(str).apply(lemmatize_text)
