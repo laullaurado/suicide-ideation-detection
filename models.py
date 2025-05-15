@@ -86,7 +86,7 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
         case Model.XGB:
             print("\n=== Training XGBoost ===")
             clf = xgb.XGBClassifier(
-                n_estimators=100, max_depth=6, learning_rate=0.1, random_state=80)
+                n_estimators=100, max_depth=6, learning_rate=0.1, random_state=100)
 
     for fold, (train_idx, test_idx) in enumerate(skf.split(X_tfidf, y), 1):
         X_train, X_test = X_tfidf[train_idx], X_tfidf[test_idx]
@@ -130,9 +130,10 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
         confusion_matrix=all_cm, display_labels=['no', 'yes'])
     disp.plot(cmap=plt.colormaps["Blues"])
     plt.title("Cumulative confusion matrix (5 folds)")
+    plt.savefig('confustion_matrix_train.png')
     plt.show()
 
-    return clf
+    return clf, np.mean(auc_scores)
 
 
 def evaluate_model(clf, X_test, y_test):
@@ -156,6 +157,7 @@ def evaluate_model(clf, X_test, y_test):
         confusion_matrix=cm, display_labels=['no', 'yes'])
     disp.plot(cmap=plt.colormaps["Blues"])
     plt.title("Confusion Matrix")
+    plt.savefig('confusion_matrix_test.png')
     plt.show()
 
     print("\n=== Test Results ===")

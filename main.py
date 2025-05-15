@@ -33,7 +33,7 @@ def main():
 
     X_train = randomized_svd_transformer(X=X_train, random_state=42)
 
-    clf = train_and_evaluate_model(X_train, df_train['is_suicide'], Model.LR)
+    clf, _ = train_and_evaluate_model(X_train, df_train['is_suicide'], Model.LR)
 
     # Test data
     df_test = pd.read_csv('./data_test_fold1(in).csv', encoding='latin-1')
