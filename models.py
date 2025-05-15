@@ -1,27 +1,61 @@
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import (
-    confusion_matrix, ConfusionMatrixDisplay, roc_auc_score,
-    precision_score, recall_score, f1_score, accuracy_score
-)
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
-import matplotlib.pyplot as plt
+from sklearn.model_selection import StratifiedKFold  # type: ignore
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_auc_score, precision_score, recall_score, f1_score, accuracy_score  # type: ignore
+from sklearn.tree import DecisionTreeClassifier  # type: ignore
+from sklearn.linear_model import LogisticRegression  # type: ignore
+from sklearn.ensemble import RandomForestClassifier  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
-from sklearn.svm import SVC
-import xgboost as xgb
+from sklearn.svm import SVC  # type: ignore
+import xgboost as xgb  # type: ignore
 
 
 from enum import Enum
 
+
 class Model(Enum):
     DT = "DecisionTree"
-    RF = "RandomForest" 
+    RF = "RandomForest"
     SVM = "SVM"
     LR = "LogisticRegression"
     XGB = "XGBoost"
 
+
 def train_and_evaluate_model(X_tfidf, y, model: Model):
+    """
+    Train and evaluate a machine learning model using Stratified K-Fold cross-validation.
+    Parameters:
+    -----------
+    X_tfidf : array-like or sparse matrix
+        The feature matrix obtained after applying TF-IDF transformation.
+    y : array-like
+        The target labels corresponding to the feature matrix.
+    model : Model
+        An enumeration representing the type of model to train. 
+        Supported models include:
+        - Model.DT: Decision Tree
+        - Model.RF: Random Forest
+        - Model.SVM: Support Vector Machine
+        - Model.LR: Logistic Regression
+        - Model.XGB: XGBoost
+    Returns:
+    --------
+    None
+        This function does not return any value. Instead, it prints the evaluation metrics 
+        for each fold, displays the accumulated confusion matrix, and prints the average 
+        metrics across all folds.
+    Metrics Calculated:
+    -------------------
+    - AUC (Area Under the Curve)
+    - Accuracy
+    - Precision
+    - Recall
+    - F1-score
+    Additional Outputs:
+    -------------------
+    - Accumulated confusion matrix across all folds.
+    - Count of True Positives (TP), True Negatives (TN), False Positives (FP), and False Negatives (FN).
+    """
+
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=80)
 
     # Acumuladores
@@ -36,22 +70,21 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
         X_train, X_test = X_tfidf[train_idx], X_tfidf[test_idx]
         y_train, y_test = y[train_idx], y[test_idx]
 
-        # 3) Entrenar el clasificador
         if model == Model.DT:
             print("Training Decision Tree")
             clf = DecisionTreeClassifier(max_depth=8, random_state=80)
         elif model == Model.RF:
             print("Training Random Forest")
             clf = RandomForestClassifier(
-                n_estimators=100,
-                max_depth=18,
-                min_samples_split=2,
-                min_samples_leaf=1,
+                # n_estimators=100,
+                max_depth=15,
+                # min_samples_split=2,
+                # min_samples_leaf=1,
                 random_state=100
             )
         elif model == Model.SVM:
             print("Training SVM")
-            clf = SVC()
+            clf = SVC(probability=True, random_state=100)
         elif model == Model.LR:
             print("Training Logistic Regression")
             clf = LogisticRegression(max_iter=1000, random_state=80)
@@ -65,11 +98,8 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
             )
         clf.fit(X_train, y_train)
 
-        # 4) Predecir y calcular probabilidades
         y_pred = clf.predict(X_test)
-                
 
-        # 5) Acumular la matriz de confusión
         cm = confusion_matrix(y_test, y_pred)
         all_cm += cm
 
@@ -88,8 +118,9 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
         print(f"F1-score: {f1_scores[-1]:.2f}")
 
     # 7) Mostrar la matriz de confusión acumulada
-    disp = ConfusionMatrixDisplay(confusion_matrix=all_cm, display_labels=['no', 'yes'])
-    disp.plot(cmap=plt.cm.Blues)
+    disp = ConfusionMatrixDisplay(
+        confusion_matrix=all_cm, display_labels=['no', 'yes'])
+    disp.plot(cmap=plt.cm.get_cmap('Blues'))
     plt.title("Matriz de confusión acumulada (5 folds)")
     plt.show()
 
