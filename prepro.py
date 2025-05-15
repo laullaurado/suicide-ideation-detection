@@ -24,40 +24,40 @@ nlp = spacy.load('en_core_web_sm')
 
 
 def clean_text(text: str) -> str:
-        """
-        Cleans and preprocesses a given text string.
-        This function performs the following operations on the input text:
-        1. Fixes mojibake and broken encodings using the `ftfy` library.
-        2. Expands contractions (e.g., "don't" -> "do not") using the `contractions` library.
-        3. Removes special characters and symbols, retaining only alphabetic characters and spaces.
-        4. Converts the text to lowercase.
-        5. Replaces multiple spaces with a single space.
-        6. Trims leading and trailing spaces.
-        7. Removes English stopwords from the text.
-        Args:
-            text (str): The input text string to be cleaned.
-        Returns:
-            str: The cleaned and preprocessed text string.
-        """
-        stop_words = set(stopwords.words('english'))
-        
-        # Fix mojibake and broken encodings
-        text = ftfy.fix_text(text)
-        # Expand contractions
-        text = contractions.fix(text)
-        # Remove special characters and symbols
-        text = re.sub(r'[^a-zA-Z\s]', '', text)
-        # Convert text to lowercase
-        text = text.lower()
-        # Remove multiple spaces
-        text = re.sub(r'\s+', ' ', text)
-        # Trim leading/trailing spaces
-        text = text.strip()
-        # Remove English stopwords
-        text = ' '.join([word for word in text.split()
-                        if word not in stop_words])
+    """
+    Cleans and preprocesses a given text string.
+    This function performs the following operations on the input text:
+    1. Fixes mojibake and broken encodings using the `ftfy` library.
+    2. Expands contractions (e.g., "don't" -> "do not") using the `contractions` library.
+    3. Removes special characters and symbols, retaining only alphabetic characters and spaces.
+    4. Converts the text to lowercase.
+    5. Replaces multiple spaces with a single space.
+    6. Trims leading and trailing spaces.
+    7. Removes English stopwords from the text.
+    Args:
+        text (str): The input text string to be cleaned.
+    Returns:
+        str: The cleaned and preprocessed text string.
+    """
+    stop_words = set(stopwords.words('english'))
 
-        return text
+    # Fix mojibake and broken encodings
+    text = ftfy.fix_text(text)
+    # Expand contractions
+    text = contractions.fix(text)
+    # Remove special characters and symbols
+    text = re.sub(r'[^a-zA-Z\s]', '', text)
+    # Convert text to lowercase
+    text = text.lower()
+    # Remove multiple spaces
+    text = re.sub(r'\s+', ' ', text)
+    # Trim leading/trailing spaces
+    text = text.strip()
+    # Remove English stopwords
+    text = ' '.join([word for word in text.split() if word not in stop_words])
+
+    return text
+
 
 def lemmatize_text(text: str) -> str:
     """
@@ -72,6 +72,7 @@ def lemmatize_text(text: str) -> str:
     doc = nlp(text)
     return ' '.join([token.lemma_ for token in doc])
 
+
 def tokenize_text(text: str) -> list[str]:
     """
     Splits the given text string into individual words
@@ -84,6 +85,7 @@ def tokenize_text(text: str) -> list[str]:
 
     return text.split()
 
+
 def transform_label(label: str) -> int:
     """
     Converts a textual label into a numerical representation.
@@ -94,6 +96,7 @@ def transform_label(label: str) -> int:
     """
 
     return 1 if label == 'yes' else 0
+
 
 def prepro(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -122,12 +125,6 @@ def prepro(df: pd.DataFrame) -> pd.DataFrame:
     """
 
     df['full_text'] = df['title'].fillna('') + ' ' + df['text'].fillna('')
-
-    # Get English stopwords
-    
-
-    
-
     df['text_clean'] = df['full_text'].astype(str).apply(clean_text)
     df['text_clean'] = df['text_clean'].astype(str).apply(lemmatize_text)
     df['is_suicide'] = df['is_suicide'].astype(str).apply(transform_label)
