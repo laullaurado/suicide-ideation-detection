@@ -29,19 +29,20 @@ def create_tfidf_features(df: pd.DataFrame):
             - 'is_suicide': Target labels indicating suicide ideation ('yes' or 'no').
     Returns:
         scipy.sparse.csr_matrix: The TF-IDF matrix representing the text data.
+        sklearn.feature_extraction.text.TfidfVectorizer: The fitted vectorizer that can be used to transform new data.
     """
 
     vectorizer = TfidfVectorizer(ngram_range=(
         1, 3), sublinear_tf=True, max_df=0.9, min_df=5, max_features=10000)
     X_tfidf = vectorizer.fit_transform(df['text_clean'])
 
-    # print("TF-IDF matrix:", X_tfidf.shape)
-    # print("No. of features:", len(
-    #     vectorizer.get_feature_names_out()))
-    # print("First 10 features:",
-    #       vectorizer.get_feature_names_out()[:10])
+    print("TF-IDF matrix:", X_tfidf.shape)
+    print("No. of features:", len(
+        vectorizer.get_feature_names_out()))
+    print("First 10 features:",
+          vectorizer.get_feature_names_out()[:10])
 
-    return X_tfidf
+    return X_tfidf, vectorizer
 
 
 def create_bow_features(df: pd.DataFrame):
@@ -55,12 +56,12 @@ def create_bow_features(df: pd.DataFrame):
             - 'is_suicide': Target labels indicating suicide ideation ('yes' or 'no').
     Returns:
         scipy.sparse.csr_matrix: The BoW matrix representing the text data.
+        sklearn.feature_extraction.text.CountVectorizer: The fitted vectorizer that can be used to transform new data.
     """
 
-    vectorizer = CountVectorizer(ngram_range=(1, 1))
+    vectorizer = CountVectorizer(ngram_range=(
+        1, 3), max_df=0.9, min_df=5, max_features=10000)
     X_bow = vectorizer.fit_transform(df['text_clean'])
-
-    y = df['is_suicide'].map({'no': 0, 'yes': 1}).values
 
     # print("BoW matrix:", X_bow.shape)
     # print("No. of features:", len(
@@ -68,7 +69,7 @@ def create_bow_features(df: pd.DataFrame):
     # print("First 10 features:",
     #       vectorizer.get_feature_names_out()[:10])
 
-    return X_bow
+    return X_bow, vectorizer
 
 
 def randomized_svd_transformer(X, n_components=100, n_iter=5, random_state=None):

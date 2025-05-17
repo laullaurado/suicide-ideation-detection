@@ -13,7 +13,7 @@ from sklearn.model_selection import StratifiedKFold  # type: ignore
 from sklearn.tree import DecisionTreeClassifier  # type: ignore
 from sklearn.linear_model import LogisticRegression  # type: ignore
 from sklearn.ensemble import RandomForestClassifier  # type: ignore
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report, roc_auc_score, precision_score, recall_score, f1_score, accuracy_score  # type: ignore
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_curve, roc_auc_score, precision_score, recall_score, f1_score, accuracy_score  # type: ignore
 import matplotlib.pyplot as plt  # type: ignore
 import numpy as np
 from sklearn.svm import SVC  # type: ignore
@@ -55,6 +55,8 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
     Returns:
         clf(sklearn classifier):
             The trained classifier from the last fold of cross-validation.
+        auc_mean(float):
+            The mean AUC score across all folds.
     """
 
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=80)
@@ -126,11 +128,31 @@ def train_and_evaluate_model(X_tfidf, y, model: Model):
     print(f"False Positives (FP): {int(fp)}")
     print(f"False Negatives (FN): {int(fn)}")
 
+    # Create comulative confusion matrix
     disp = ConfusionMatrixDisplay(
         confusion_matrix=all_cm, display_labels=['no', 'yes'])
     disp.plot(cmap=plt.colormaps["Blues"])
     plt.title("Cumulative confusion matrix (5 folds)")
     plt.savefig('confustion_matrix_train.png')
+    plt.show()
+
+    # Add ROC curve
+    fpr, tpr, _ = roc_curve(y_test, y_proba)
+    auc = roc_auc_score(y_test, y_proba)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='blue', lw=2,
+             label=f'ROC curve (AUC = {auc:.2f})')
+    plt.plot([0, 1], [0, 1], color='gray',
+             linestyle='--', lw=2, label='Random')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.grid(alpha=0.3)
+    plt.savefig('roc_curve_train.png', dpi=300, bbox_inches='tight')
     plt.show()
 
     return clf, np.mean(auc_scores)
@@ -152,12 +174,32 @@ def evaluate_model(clf, X_test, y_test):
     y_proba = clf.predict_proba(X_test)[:, 1]
     y_pred = clf.predict(X_test)
 
+    # Create confusion matrix
     cm = confusion_matrix(y_test, y_pred)
     disp = ConfusionMatrixDisplay(
         confusion_matrix=cm, display_labels=['no', 'yes'])
     disp.plot(cmap=plt.colormaps["Blues"])
     plt.title("Confusion Matrix")
     plt.savefig('confusion_matrix_test.png')
+    plt.show()
+
+    # Add ROC curve
+    fpr, tpr, _ = roc_curve(y_test, y_proba)
+    auc = roc_auc_score(y_test, y_proba)
+
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='blue', lw=2,
+             label=f'ROC curve (AUC = {auc:.2f})')
+    plt.plot([0, 1], [0, 1], color='gray',
+             linestyle='--', lw=2, label='Random')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.grid(alpha=0.3)
+    plt.savefig('roc_curve_test.png', dpi=300, bbox_inches='tight')
     plt.show()
 
     print("\n=== Test Results ===")

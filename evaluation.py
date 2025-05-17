@@ -7,8 +7,8 @@ Authors:
 Date:
     2025-05-15
 Description:
-    This script evaluates all models from models.py with both TF-IDF and BOW decoders,
-    applying SVD before training. It tracks AUC scores to determine the best combination.
+    This script evaluates all models from models.py with both TF-IDF and BOW decoders.
+    It tracks AUC scores to determine the best combination.
 """
 
 import pandas as pd  # type:ignore
@@ -19,10 +19,10 @@ from time import time
 import matplotlib.pyplot as plt
 
 
-def main():
+def evaluation():
     """
-    Main function that evaluates all models with different feature extraction methods.
-    Tests both TF-IDF and BOW vectorization, applies SVD, and evaluates all models
+    Function that evaluates all models with different feature extraction methods.
+    Tests both TF-IDF and BOW vectorization, and evaluates all models
     defined in the Model enum.
     """
     # Load and preprocess training data
@@ -42,8 +42,8 @@ def main():
         ("BOW", create_bow_features)
     ]
 
-    # SVD parameters
-    n_components = 100
+    # # SVD parameters
+    # n_components = 100
 
     # Evaluate all combinations
     for decoder_name, decoder_func in decoders:
@@ -53,24 +53,24 @@ def main():
 
         # Create features
         print(f"\nCreating {decoder_name} features...")
-        X = decoder_func(df)
+        X, _ = decoder_func(df)
         print(f"Feature matrix shape: {X.shape}")
 
-        # Apply SVD
-        print(f"\nApplying SVD with {n_components} components...")
-        X_svd = randomized_svd_transformer(
-            X=X, n_components=n_components, random_state=42)
-        print(f"Reduced feature matrix shape: {X_svd.shape}")
+        # # Apply SVD
+        # print(f"\nApplying SVD with {n_components} components...")
+        # X_svd = randomized_svd_transformer(
+        #     X=X, n_components=n_components, random_state=42)
+        # print(f"Reduced feature matrix shape: {X_svd.shape}")
 
         # Train and evaluate each model
         for model in Model:
             print(f"\n{'='*30}")
-            print(f"EVALUATING: {decoder_name} + SVD + {model.value}")
+            print(f"EVALUATING: {decoder_name} + {model.value}")
             print(f"{'='*30}")
 
             # Train model and capture AUC scores
             start_time = time()
-            _, auc = train_and_evaluate_model(X_svd, y, model)
+            _, auc = train_and_evaluate_model(X, y, model)
 
             # Store results
             results.append({
@@ -131,4 +131,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    evaluation()
